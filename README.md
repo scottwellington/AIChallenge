@@ -1,6 +1,7 @@
 # Why did the lobster blush?
 ###### Because the sugar kelp.
 
+
 Team 1's GitHub for the AI Challenge.
 
 ---
@@ -38,6 +39,7 @@ Navigate to the repo (default `~/AIChallenge`)
 `git push`
 
 Done :-)
+
 ---
 
 ###### TODO
