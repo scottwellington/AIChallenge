@@ -6,6 +6,7 @@ W = Whole S. latissima blade dry weight
 C_T = Temperature correction factor
 I = Irradiance (mol γ m –2 h –1 )
 N = Nitrate and nitrite concentration (NO_3^– and NO_2^–L^–1)
+P = Phosphate and phosphate concentration (PO_4^3–)
 J_CO2 = Specific CO_2 uptake rate from photosynthetic SU1
 J_I = Specific relaxation rate from photosynthetic SU2
 J_EC_A = Specific assimilation rate of C from photosynthetic SU3
