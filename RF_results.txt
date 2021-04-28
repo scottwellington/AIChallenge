@@ -1,3 +1,6 @@
+Linear Regression on training set (df_all) = 0.00287854961099625
+Linear Regression on test set (df_all) = 0.002682076531252332
+
 df_all:
 Samme/AdaBoost Regression Forest train RMSE 0.0009961343355747688
 Samme/AdaBoost Regression Forest test RMSE 0.0009665540109604033
