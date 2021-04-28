@@ -1,0 +1,15 @@
+df_all:
+Samme/AdaBoost Regression Forest train RMSE 0.0009961343355747688
+Samme/AdaBoost Regression Forest test RMSE 0.0009665540109604033
+
+df_all_no_gaussian:
+Samme/AdaBoost Regression Forest train RMSE 0.0009937203199733894
+Samme/AdaBoost Regression Forest test RMSE 0.0009700774858137052
+
+df_delta:
+Samme/AdaBoost Regression Forest train RMSE 0.00099490263540246
+Samme/AdaBoost Regression Forest test RMSE 0.0009665366507681447
+
+df_delta_no_gaussian:
+Samme/AdaBoost Regression Forest train RMSE 0.000989486822227868
+Samme/AdaBoost Regression Forest test RMSE 0.0009700933153113919
