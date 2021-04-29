@@ -15,7 +15,6 @@ from sklearn.model_selection import KFold, train_test_split
 from sklearn.metrics import mean_squared_error
 
 
-
 class LinearRegression:
 
     def __init__(self):
@@ -126,8 +125,174 @@ class LinearRegression:
         return train_RMSE, test_RMSE
 
 
+class RegressionForest:
 
-class BoostingRegressionForest():
+    def __init__(self, ensemble_size=10, max_depth=10):
+
+        # decide size of ensemble (also determines the number of bootstrap draws)
+        
+        self.ensemble = True
+        self.random_subspace = True
+
+        # set hyperperameters:
+        
+        self.max_depth = max_depth
+        self.ensemble_size = ensemble_size
+
+    def find_split(self, x, y):
+        # Given a dataset and its target values, find the optimal combination
+        # of feature and split points that gives the minimum variance.
+        
+        # Starting variance (to measure improvement):
+        start_variance = np.var(y)
+        
+        # Initialise:
+        best = {'weighted_variance': start_variance}
+        idx = range(x.shape[1])
+
+        if self.random_subspace:
+
+            # set random subspace bootstrap size to be √(no. of features) (rounded up):
+            random_subspace_bootstrap_size = int(np.ceil(np.sqrt(x.shape[1])))
+            # make that many bootstrap draws of the features (without replacement):
+            random_subspace_bootstrap_draws = np.random.choice(range(x.shape[1]),
+                size=random_subspace_bootstrap_size, replace=False)
+            # replace our indices with the bootstrap draws:
+            idx = sorted(random_subspace_bootstrap_draws)
+
+        # Loop every possible split of every (bootstrapped) dimension:
+
+        for i in idx:
+            for split in np.unique(x[:,i]):
+                
+                left_indices = [v for v in range(len(x[:,i])) if x[v,i] <= split]
+                right_indices = [v for v in range(len(x[:,i])) if x[v,i] > split]
+                
+                left_exemplars = [y[v] for v in left_indices]
+                right_exemplars = [y[v] for v in right_indices]
+                
+                left_variance = np.var(left_exemplars)
+                right_variance = np.var(right_exemplars)
+                
+                n = len(x[:,i])
+                l = (len(left_exemplars)/n)*left_variance
+                r = (len(right_exemplars)/n)*right_variance
+                
+                weighted_variance = l + r # want to minimise this
+                
+                if weighted_variance < best['weighted_variance']:
+                    best = {'feature' : i,
+                            'split' : split,
+                            'weighted_variance' : weighted_variance, 
+                            'left_indices' : left_indices,
+                            'right_indices' : right_indices}
+        return best
+
+    def build_tree(self, x, y, max_depth = np.inf):
+        
+        # Check if either of the stopping conditions have been reached. If so generate a leaf node:
+        
+        if max_depth==1 or (y==y[0]).all():
+        
+            # Generate a leaf node.
+            # for Regression, take the mean of the values that reached this leaf,
+            # not the dominant class label (as per classification)
+            return {'leaf': True, 'value': np.mean(y)}
+        
+        else:
+            move = self.find_split(x, y)
+            
+            max_depth-=1 # iterative decrease, per depth
+
+            left = self.build_tree(x[move['left_indices'],:], y[move['left_indices']], max_depth - 1)
+            right = self.build_tree(x[move['right_indices'],:], y[move['right_indices']], max_depth - 1)
+            
+            return {'leaf' : False,
+                    'feature' : move['feature'],
+                    'split' : move['split'],
+                    'weighted_variance' : move['weighted_variance'],
+                    'left' : left,
+                    'right' : right}
+
+    def cart(self, tree, samples):
+
+        # predict value for every entry of a data matrix:
+
+        ret = np.empty(samples.shape[0], dtype=np.float64)
+        ret.fill(-1)
+        indices = np.arange(samples.shape[0])
+        
+        def tranverse(node, indices):
+            nonlocal samples
+            nonlocal ret
+            
+            if node['leaf']:
+                ret[indices] = node['value']
+            
+            else:
+                going_left = samples[indices, node['feature']] <= node['split']
+                left_indices = indices[going_left]
+                right_indices = indices[np.logical_not(going_left)]
+                
+                if left_indices.shape[0] > 0:
+                    tranverse(node['left'], left_indices)
+                    
+                if right_indices.shape[0] > 0:
+                    tranverse(node['right'], right_indices)
+        
+        tranverse(tree, indices)
+        return ret
+
+    def fit(self, x, y):
+
+        self.tree_dict = defaultdict()
+        time = datetime.datetime.now().timestamp() * 1000
+
+        for i in range(self.ensemble_size):
+
+            # Select S, the size of the emsemble and the number of bootstrap draws:
+            bootstrap_aggregate_draw_size = self.ensemble_size
+
+            bootstrap_aggregate_draws = sorted(np.random.choice(range(x.shape[0]),
+                size=bootstrap_aggregate_draw_size, replace=False))
+
+            x = np.array([x[i,:] for i in bootstrap_aggregate_draws])
+            y = np.array([y[i] for i in bootstrap_aggregate_draws])
+
+            tree = self.build_tree(x, y, max_depth=self.max_depth)
+            tree_dict[i] = tree
+
+        # Store times for reporting:
+        time = (datetime.datetime.now().timestamp() * 1000) - time
+
+        return time
+
+    def predict(self, x):
+
+        predicted = []
+
+        time = datetime.datetime.now().timestamp() * 1000
+
+        # Get each tree in our ensemble to output a prediction of the dataset passed to it:
+        for i in self.tree_dict.keys():
+
+            time_a = datetime.datetime.now().timestamp() * 1000
+            predicted.append(self.cart(tree_dict[i], x))
+            time_b = datetime.datetime.now().timestamp() * 1000
+            time += time_b - time_a
+
+        # Take the transpose of this output, so that each row of the matrix is every tree's
+        # guess for that row's target value (e.g. row1 = every tree's guess for row1,
+        # row2 = every tree's guess for row2, etc...)
+        predicted = np.array(predicted).T
+
+        # take the mean value of the guesses:
+        predicted = [np.mean(i) for i in predicted]
+
+        return time, predicted
+
+
+class BoostingRegressor():
     
     # Hastie, T., Rosset, S., Zhu, J., & Zou, H. (2009). AdaBoost. Statistics and its Interface, 2(3), 349-360.
 
@@ -144,7 +309,7 @@ class BoostingRegressionForest():
         self.bootstrap = bootstrap
         self.random_subspace = random_subspace
 
-        
+     
     def fit(self, x_train, y_train):
         
         # initialise the weight matrices:
@@ -172,7 +337,8 @@ class BoostingRegressionForest():
             if self.random_subspace:
                 x = self.get_random_subspace(x)
             
-            self.models.append(tree.DecisionTreeRegressor(max_depth=self.max_depth).fit(x,y))
+            RF = RegressionForest(max_depth=self.max_depth, ensemble_size=self.weak_learners)
+            self.models.append(RF.fit(x,y))
         
         if self.random_subspace:
             x_train = self.get_random_subspace(x_train)        
@@ -181,7 +347,7 @@ class BoostingRegressionForest():
         for i in tqdm(range(self.weak_learners)):
             
             model = self.models[i]
-            pred = model.predict(x_train) # get model predictions               
+            _, pred = model.predict(x_train) # get model predictions               
 
             e = np.abs(y_train-pred)
 
@@ -221,7 +387,6 @@ class BoostingRegressionForest():
             _x.append(x[j][random_subspace])
         
         return np.array(_x)
-       
         
     def predict(self, x):        
         
@@ -252,12 +417,6 @@ class BoostingRegressionForest():
 
 
 def preprocess_data(X_train, y_train, X_test, y_test):
-    
-    # Fit k-best (chi-squared) transform to training data; apply fitted transform to test data:
-    
-    # kbest = SelectKBest(chi2, k=10)
-    # X_train = kbest.fit_transform(X_train, y_train)
-    # X_test = kbest.transform(X_test)
     
     # Fit PCA to training data; apply fitted transform to test data:
 
@@ -291,7 +450,6 @@ def preprocess_data(X_train, y_train, X_test, y_test):
     y_train = np.array(y_train[idxs])
             
     return (X_train, y_train, X_test, y_test) 
-
 
 
 if __name__ == "__main__":
@@ -336,8 +494,8 @@ if __name__ == "__main__":
             lr_train_RMSE.append(train_RMSE)
             lr_test_RMSE.append(test_RMSE)
 
-            brf = BoostingRegressionForest()
-            brf.fit(X_train, y_train)
+            br = BoostingRegressor()
+            br.fit(X_train, y_train)
 
             # Take a test set-sized sample of the training set to get its accuracy:
             idxs = np.random.choice(
@@ -345,7 +503,7 @@ if __name__ == "__main__":
             _x, _y = np.array(
                 [X_train[j,:] for j in idxs]), np.array([y_train[j] for j in idxs])
 
-            x_pred = brf.predict(_x)
+            x_pred = br.predict(_x)
 
             pred_store.append(x_pred)
             error_store.append(np.abs(_y - x_pred))
@@ -354,7 +512,7 @@ if __name__ == "__main__":
             print(f'fold {fold} RMSE:', acc)
             train_preds.append(acc)
 
-            y_pred = brf.predict(X_test)
+            y_pred = br.predict(X_test)
             acc = mean_squared_error(y_test, y_pred, squared=False)
             print(f'fold {fold} RMSE:', acc)
             test_preds.append(acc)
@@ -365,5 +523,5 @@ if __name__ == "__main__":
         print('Linear regression train RNSE', np.mean(lr_train_RMSE))
         print('Linear regression test RNSE', np.mean(lr_test_RMSE))    
         print()
-        print('Samme/AdaBoost Regression Forest train RMSE', np.mean(train_preds))
-        print('Samme/AdaBoost Regression Forest test RMSE', np.mean(test_preds))
+        print('Boosted Regression Forest train RMSE', np.mean(train_preds))
+        print('Boosted Regression Forest test RMSE', np.mean(test_preds))
