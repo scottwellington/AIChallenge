@@ -260,7 +260,7 @@ class RegressionForest:
         # Store times for reporting:
         time = (datetime.datetime.now().timestamp() * 1000) - time
 
-        return time
+        #return time
 
     def predict(self, x):
 
