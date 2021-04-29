@@ -5,12 +5,7 @@ import random
 import pandas as pd
 import pdb
 from tqdm import tqdm
-from matplotlib import pyplot as plt
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import normalize
-from sklearn.feature_selection import SelectKBest, chi2, f_classif, SelectPercentile
-from sklearn.decomposition import TruncatedSVD
-from sklearn import tree
 from sklearn.model_selection import KFold, train_test_split
 from sklearn.metrics import mean_squared_error
 
