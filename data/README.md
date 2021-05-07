@@ -21,7 +21,7 @@ Garcia, H. E., K. Weathers, C. R. Paver, I. Smolyar, T. P. Boyer, R. A. Locarnin
 ###### Nutrients data:
 Garcia, H. E., K. Weathers, C. R. Paver, I. Smolyar, T. P. Boyer, R. A. Locarnini, M. M. Zweng, A. V. Mishonov, O. K. Baranova, D. Seidov, and J. R. Reagan, 2019. World Ocean Atlas 2018, Volume 4: Dissolved Inorganic Nutrients (phosphate, nitrate and nitrate+nitrite, silicate). A. Mishonov Technical Ed.; NOAA Atlas NESDIS 84, 35 pp.
 
-### Venolia et al., Modeling the Growth of Sugar Kelp (Saccharina latissima) in Aquaculture Systems using Dynamic Energy Budget Theory:
+### Venolia et al. (2020) "Modeling the Growth of Sugar Kelp (Saccharina latissima) in Aquaculture Systems using Dynamic Energy Budget Theory"
 Venolia, C. T., Lavaud, R., Green-Gavrielidis, L. A., Thornber, C., & Humphries, A. T. (2020). Modeling the Growth of Sugar Kelp (Saccharina latissima) in Aquaculture Systems using Dynamic Energy Budget Theory. Ecological Modelling, 430, 109151.
 
 Their data can be obtained from their GitHub repo:
