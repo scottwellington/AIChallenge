@@ -1,8 +1,11 @@
 # Why did the lobster blush?
 ###### Because the sugar kelp.
 
+---
 
-Team 1's GitHub for the AI Challenge.
+Welcome to Team 1's GitHub for the AI Challenge!
+
+![kelp](kelp.png)
 
 ---
 
@@ -14,7 +17,7 @@ Team 1's GitHub for the AI Challenge.
 
 `git clone https://github.com/scottwellington/AIChallenge.git`
 
-## Making changes
+## Notes for Team Members: making changes to this repo
 
 Note: this is the most straight-forward and accessible way to use GitHub as a team, but this isn't how you'd typically use it: we are going to simplify the process by avoiding branches, rebase and merge, which are not newbie-friendly.
 
@@ -44,4 +47,4 @@ Done :-)
 
 ###### TODO
 
-* Everyone can use this section to post todo updates [Scott]
+* 07/05/21 - go to the pub and celebrate a job well done [Scott]
